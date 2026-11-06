@@ -1,0 +1,129 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>OrionMap - Bangladesh Road Routing</title>
+
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.css"
+    >
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+
+        header {
+            height: 72px;
+            background: #172554;
+            color: white;
+            display: flex;
+            align-items: center;
+            padding: 0 25px;
+            justify-content: space-between;
+        }
+
+        .brand h1 {
+            font-size: 25px;
+        }
+
+        .brand p {
+            font-size: 12px;
+            margin-top: 4px;
+            color: #cbd5e1;
+        }
+
+        #map {
+            width: 100%;
+            height: calc(100vh - 72px);
+        }
+
+        .maplibregl-ctrl-group {
+            border-radius: 8px !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="brand">
+            <h1>OrionMap</h1>
+            <p>Bangladesh Road Routing System</p>
+        </div>
+
+        <div>
+            <span>Explore Bangladesh</span>
+        </div>
+    </header>
+
+    <div id="map"></div>
+
+    <script type="module">
+        import * as maplibregl from
+            "https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.mjs";
+
+        const map = new maplibregl.Map({
+            container: "map",
+
+            style: "https://tiles.openfreemap.org/styles/liberty",
+
+            center: [90.3563, 23.6850],
+
+            zoom: 7
+        });
+
+        // Zoom and Rotation Controls
+        map.addControl(
+            new maplibregl.NavigationControl(),
+            "top-right"
+        );
+
+        // Current Location Control
+        map.addControl(
+            new maplibregl.GeolocateControl({
+                positionOptions: {
+                    enableHighAccuracy: true
+                },
+                trackUserLocation: true,
+                showUserHeading: true
+            }),
+            "top-right"
+        );
+
+        // Fullscreen Control
+        map.addControl(
+            new maplibregl.FullscreenControl(),
+            "top-right"
+        );
+
+        // Scale Control
+        map.addControl(
+            new maplibregl.ScaleControl({
+                unit: "metric"
+            }),
+            "bottom-left"
+        );
+
+        map.on("load", () => {
+            console.log("OrionMap loaded successfully!");
+        });
+
+        map.on("error", (event) => {
+            console.error("Map Error:", event.error);
+        });
+    </script>
+
+</body>
+</html>
