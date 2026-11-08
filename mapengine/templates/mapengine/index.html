@@ -7,11 +7,6 @@
 
     <title>OrionMap - Bangladesh Road Routing</title>
 
-    <link
-        rel="stylesheet"
-        href="https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.css"
-    >
-
     <style>
         * {
             margin: 0;
@@ -22,108 +17,1437 @@
         body {
             font-family: Arial, sans-serif;
             overflow: hidden;
+            background: #f8fafc;
         }
 
         header {
-            height: 72px;
+            height: 65px;
             background: #172554;
             color: white;
             display: flex;
             align-items: center;
-            padding: 0 25px;
             justify-content: space-between;
+            padding: 0 24px;
         }
 
         .brand h1 {
-            font-size: 25px;
+            font-size: 24px;
         }
 
         .brand p {
-            font-size: 12px;
+            font-size: 11px;
             margin-top: 4px;
             color: #cbd5e1;
         }
 
-        #map {
-            width: 100%;
-            height: calc(100vh - 72px);
+        .header-status {
+            font-size: 13px;
+            color: #bfdbfe;
         }
 
-        .maplibregl-ctrl-group {
-            border-radius: 8px !important;
+        .workspace {
+            display: flex;
+            height: calc(100vh - 65px);
+        }
+
+        /* Sidebar */
+
+        .sidebar {
+            width: 360px;
+            min-width: 360px;
+            background: white;
+            padding: 24px;
+            border-right: 1px solid #e2e8f0;
+            overflow-y: auto;
+            z-index: 2;
+        }
+
+        .sidebar h2 {
+            font-size: 21px;
+            color: #172554;
+            margin-bottom: 8px;
+        }
+
+        .description {
+            font-size: 13px;
+            color: #64748b;
+            line-height: 1.5;
+            margin-bottom: 28px;
+        }
+
+        .field-group {
+            margin-bottom: 20px;
+        }
+
+        .field-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: bold;
+            color: #334155;
+            margin-bottom: 8px;
+        }
+
+        .field-group input {
+            width: 100%;
+            height: 45px;
+            padding: 0 13px;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .field-group input:focus {
+            border-color: #2563eb;
+        }
+
+        .swap-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: -12px;
+            margin-bottom: 12px;
+        }
+
+        #swapBtn {
+            border: none;
+            background: #eff6ff;
+            color: #2563eb;
+            padding: 7px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        #swapBtn:hover {
+            background: #dbeafe;
+        }
+
+        .route-btn {
+            width: 100%;
+            height: 46px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 7px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        .route-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .route-btn:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        .sidebar-divider {
+            border: none;
+            border-top: 1px solid #e2e8f0;
+            margin: 26px 0;
+        }
+
+        .route-info h3 {
+            font-size: 15px;
+            color: #334155;
+            margin-bottom: 10px;
+        }
+
+        .route-info p {
+            font-size: 13px;
+            color: #64748b;
+            line-height: 1.6;
+            word-break: break-word;
+        }
+
+        /* Google Map */
+
+        #map {
+            flex: 1;
+            height: 100%;
+            min-width: 0;
+        }
+
+        /* Custom Markers */
+
+        .marker-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .marker-label {
+            background: white;
+            color: #172554;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 6px 10px;
+            border-radius: 6px;
+            margin-bottom: 5px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            border: 1px solid #e2e8f0;
+            max-width: 220px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .marker-pin {
+            width: 18px;
+            height: 18px;
+            border: 3px solid white;
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .location-button {
+            background: white;
+            border: none;
+            border-radius: 4px;
+            padding: 9px 12px;
+            margin: 10px;
+            font-size: 13px;
+            font-weight: bold;
+            color: #334155;
+            cursor: pointer;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.3);
+        }
+
+        .location-button:hover {
+            background: #f1f5f9;
+        }
+
+        @media (max-width: 700px) {
+            header {
+                padding: 0 14px;
+            }
+
+            .header-status {
+                display: none;
+            }
+
+            .workspace {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                min-width: 0;
+                max-height: 48%;
+                padding: 16px;
+            }
+
+            #map {
+                min-height: 52%;
+            }
         }
     </style>
 </head>
 
 <body>
 
-    <header>
-        <div class="brand">
-            <h1>OrionMap</h1>
-            <p>Bangladesh Road Routing System</p>
+<header>
+    <div class="brand">
+        <h1>OrionMap</h1>
+        <p>Bangladesh Road Routing System</p>
+    </div>
+
+    <div class="header-status">
+        Explore Bangladesh
+    </div>
+</header>
+
+<main class="workspace">
+
+    <aside class="sidebar">
+
+        <h2>Plan Your Route</h2>
+
+        <p class="description">
+            Find routes across Bangladesh using real OpenStreetMap road data.
+        </p>
+
+        <div class="field-group">
+            <label for="startLocation">Starting Point</label>
+
+            <input
+                type="text"
+                id="startLocation"
+                list="startSuggestions"
+                placeholder="Search starting location"
+                autocomplete="off"
+            >
+
+            <datalist id="startSuggestions"></datalist>
         </div>
 
-        <div>
-            <span>Explore Bangladesh</span>
+        <div class="swap-container">
+            <button type="button" id="swapBtn">
+                ⇅ Swap Locations
+            </button>
         </div>
-    </header>
+
+        <div class="field-group">
+            <label for="destination">Destination</label>
+
+            <input
+                type="text"
+                id="destination"
+                list="destinationSuggestions"
+                placeholder="Search destination"
+                autocomplete="off"
+            >
+
+            <datalist id="destinationSuggestions"></datalist>
+        </div>
+
+        <button
+            type="button"
+            class="route-btn"
+            id="findRouteBtn"
+            disabled
+        >
+            Find Route
+        </button>
+
+        <hr class="sidebar-divider">
+
+        <section class="route-info">
+            <h3>Route Information</h3>
+
+            <p id="routeMessage">
+                Select your starting point and destination
+                to begin route planning.
+            </p>
+        </section>
+
+    </aside>
 
     <div id="map"></div>
 
-    <script type="module">
-        import * as maplibregl from
-            "https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.mjs";
+</main>
 
-        const map = new maplibregl.Map({
-            container: "map",
 
-            style: "https://tiles.openfreemap.org/styles/liberty",
+<!-- Google Maps Dynamic Library Loader -->
 
-            center: [90.3563, 23.6850],
+<script>
+    (g => {
+        var h, a, k,
+            p = "The Google Maps JavaScript API",
+            c = "google",
+            l = "importLibrary",
+            q = "__ib__",
+            m = document,
+            b = window;
 
-            zoom: 7
-        });
+        b = b[c] || (b[c] = {});
 
-        // Zoom and Rotation Controls
-        map.addControl(
-            new maplibregl.NavigationControl(),
-            "top-right"
-        );
+        var d = b.maps || (b.maps = {}),
+            r = new Set(),
+            e = new URLSearchParams(),
 
-        // Current Location Control
-        map.addControl(
-            new maplibregl.GeolocateControl({
-                positionOptions: {
-                    enableHighAccuracy: true
+            u = () => h || (h = new Promise(async (f, n) => {
+
+                await (a = m.createElement("script"));
+
+                e.set("libraries", [...r] + "");
+
+                for (k in g) {
+                    e.set(
+                        k.replace(
+                            /[A-Z]/g,
+                            t => "_" + t[0].toLowerCase()
+                        ),
+                        g[k]
+                    );
+                }
+
+                e.set("callback", c + ".maps." + q);
+
+                a.src = `https://maps.${c}apis.com/maps/api/js?` + e;
+
+                d[q] = f;
+
+                a.onerror = () => {
+                    h = n(Error(p + " could not load."));
+                };
+
+                a.nonce =
+                    m.querySelector("script[nonce]")?.nonce || "";
+
+                m.head.append(a);
+
+            }));
+
+        d[l]
+            ? console.warn(p + " only loads once. Ignoring:", g)
+            : d[l] = (f, ...n) => r.add(f) && u().then(
+                () => d[l](f, ...n)
+            );
+
+    })({
+        key: "{{ google_maps_api_key|escapejs }}",
+        v: "weekly"
+    });
+</script>
+
+
+<script type="module">
+
+    // ==========================================
+    // 1. GOOGLE MAPS INITIALIZATION
+    // ==========================================
+
+    let map;
+
+    let AdvancedMarkerElement;
+    let Polyline;
+    let LatLngBounds;
+
+    let mapReady = false;
+
+    async function initializeMap() {
+
+        try {
+
+            const [
+                
+                { Map, Polyline: GooglePolyline },
+                { AdvancedMarkerElement: GoogleAdvancedMarkerElement },
+                { Geocoder }
+            ] = await Promise.all([
+                google.maps.importLibrary("maps"),
+                google.maps.importLibrary("marker"),
+                google.maps.importLibrary("geocoding")
+            ]);
+
+geocoder = new Geocoder();
+
+            const GoogleLatLngBounds = google.maps.LatLngBounds;
+
+            AdvancedMarkerElement = GoogleAdvancedMarkerElement;
+            Polyline = GooglePolyline;
+            LatLngBounds = GoogleLatLngBounds;
+
+            map = new Map(document.getElementById("map"), {
+
+                center: {
+                    lat: 23.6850,
+                    lng: 90.3563
                 },
-                trackUserLocation: true,
-                showUserHeading: true
-            }),
-            "top-right"
-        );
 
-        // Fullscreen Control
-        map.addControl(
-            new maplibregl.FullscreenControl(),
-            "top-right"
-        );
+                zoom: 7,
 
-        // Scale Control
-        map.addControl(
-            new maplibregl.ScaleControl({
-                unit: "metric"
-            }),
-            "bottom-left"
-        );
+                mapId: "DEMO_MAP_ID",
 
-        map.on("load", () => {
-            console.log("OrionMap loaded successfully!");
+                zoomControl: true,
+                mapTypeControl: true,
+                streetViewControl: false,
+                fullscreenControl: true,
+                scaleControl: true,
+
+                clickableIcons: false
+
+            });
+
+            mapReady = true;
+
+            updateFindRouteButton();
+
+            routeMessage.textContent =
+                "Search a location or click on the map to select your starting point.";
+
+            console.log("Google Maps loaded successfully!");
+
+            // Add custom current location button
+
+            addLocationControl();
+
+            // Map click event
+
+            map.addListener("click", handleMapClick);
+
+        } catch (error) {
+
+            console.error("Google Maps Initialization Error:", error);
+
+            routeMessage.textContent =
+                "Google Maps could not load. Check your API key and Maps JavaScript API settings.";
+
+        }
+
+    }
+
+
+    // ==========================================
+    // 2. DOM ELEMENTS
+    // ==========================================
+
+    const startInput =
+        document.getElementById("startLocation");
+
+    const destinationInput =
+        document.getElementById("destination");
+
+    const startSuggestions =
+        document.getElementById("startSuggestions");
+
+    const destinationSuggestions =
+        document.getElementById("destinationSuggestions");
+
+    const swapBtn =
+        document.getElementById("swapBtn");
+
+    const findRouteBtn =
+        document.getElementById("findRouteBtn");
+
+    const routeMessage =
+        document.getElementById("routeMessage");
+
+
+    // ==========================================
+    // 3. SELECTED LOCATIONS AND MARKERS
+    // ==========================================
+    let geocoder = null;
+
+    let currentLocationMarker = null;
+    let currentLocationCircle = null;
+
+    let mapSelectionRequest = 0;
+
+    let startPoint = null;
+    let destinationPoint = null;
+
+    let startMarker = null;
+    let destinationMarker = null;
+
+    let routeLine = null;
+
+    let startLabel = "";
+    let destinationLabel = "";
+
+    let isFindingRoute = false;
+
+
+    // ==========================================
+    // 4. LOCATION SEARCH VARIABLES
+    // ==========================================
+
+    let startResults = [];
+    let destinationResults = [];
+
+    let startSearchRequest = 0;
+    let destinationSearchRequest = 0;
+
+
+    // ==========================================
+    // 5. UPDATE FIND ROUTE BUTTON
+    // ==========================================
+
+    function updateFindRouteButton() {
+
+        findRouteBtn.disabled =
+            !mapReady ||
+            !startPoint ||
+            !destinationPoint ||
+            isFindingRoute;
+
+    }
+
+
+    // ==========================================
+    // 6. CLEAR EXISTING ROUTE
+    // ==========================================
+
+    function clearRoute() {
+
+        if (routeLine) {
+
+            routeLine.setMap(null);
+
+            routeLine = null;
+
+        }
+
+    }
+
+
+    // ==========================================
+    // 7. CREATE CUSTOM GOOGLE MAP MARKER
+    // ==========================================
+    async function reverseGeocodeLocation(coordinates) {
+    try {
+        const { results } = await geocoder.geocode({
+            location: {
+                lat: coordinates[1],
+                lng: coordinates[0]
+            },
+            language: "en"
         });
 
-        map.on("error", (event) => {
-            console.error("Map Error:", event.error);
+        if (results && results.length > 0) {
+            return results[0].formatted_address;
+        }
+
+        return "Unnamed location";
+
+    } catch (error) {
+        console.error("Reverse Geocoding Error:", error);
+        return "Selected location";
+    }
+    }
+
+    function createLocationMarker(position, label, color) {
+
+        const container = document.createElement("div");
+
+        container.className = "marker-container";
+
+        const markerLabel = document.createElement("div");
+
+        markerLabel.className = "marker-label";
+
+        markerLabel.textContent = label;
+
+        const markerPin = document.createElement("div");
+
+        markerPin.className = "marker-pin";
+
+        markerPin.style.backgroundColor = color;
+
+        container.appendChild(markerLabel);
+
+        container.appendChild(markerPin);
+
+        return new AdvancedMarkerElement({
+
+            map: map,
+
+            position: position,
+
+            content: container,
+
+            title: label
+
         });
-    </script>
+
+    }
+
+
+    // ==========================================
+    // 8. UPDATE START MARKER
+    // ==========================================
+
+    function updateStartMarker() {
+
+        if (startMarker) {
+
+            startMarker.map = null;
+
+            startMarker = null;
+
+        }
+
+        if (startPoint) {
+
+            startMarker = createLocationMarker(
+
+                {
+                    lat: startPoint[1],
+                    lng: startPoint[0]
+                },
+
+                startLabel || "Starting Point",
+
+                "#16a34a"
+
+            );
+
+        }
+
+    }
+
+
+    // ==========================================
+    // 9. UPDATE DESTINATION MARKER
+    // ==========================================
+
+    function updateDestinationMarker() {
+
+        if (destinationMarker) {
+
+            destinationMarker.map = null;
+
+            destinationMarker = null;
+
+        }
+
+        if (destinationPoint) {
+
+            destinationMarker = createLocationMarker(
+
+                {
+                    lat: destinationPoint[1],
+                    lng: destinationPoint[0]
+                },
+
+                destinationLabel || "Destination",
+
+                "#dc2626"
+
+            );
+
+        }
+
+    }
+
+
+    // ==========================================
+    // 10. CURRENT LOCATION CONTROL
+    // ==========================================
+
+    
+function addLocationControl() {
+
+    const button = document.createElement("button");
+
+    button.className = "location-button";
+    button.textContent = "My Location";
+    button.title = "Show my current location";
+
+    button.addEventListener("click", () => {
+
+        if (!navigator.geolocation) {
+            routeMessage.textContent =
+                "Geolocation is not supported by this browser.";
+            return;
+        }
+
+        button.textContent = "Locating...";
+
+        routeMessage.textContent =
+            "Getting your current location. Please wait...";
+
+        navigator.geolocation.getCurrentPosition(
+
+            position => {
+
+                const coordinates = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                };
+
+                const accuracy = position.coords.accuracy;
+
+                // Remove previous current location marker
+
+                if (currentLocationMarker) {
+                    currentLocationMarker.map = null;
+                }
+
+                if (currentLocationCircle) {
+                    currentLocationCircle.setMap(null);
+                }
+
+                // Show current location marker
+
+                currentLocationMarker = createLocationMarker(
+                    coordinates,
+                    "Your Location",
+                    "#2563eb"
+                );
+
+                // Show GPS accuracy area
+
+                currentLocationCircle = new google.maps.Circle({
+                    map: map,
+                    center: coordinates,
+                    radius: accuracy,
+
+                    strokeColor: "#2563eb",
+                    strokeOpacity: 0.8,
+                    strokeWeight: 2,
+
+                    fillColor: "#3b82f6",
+                    fillOpacity: 0.12,
+
+                    clickable: false
+                });
+
+                // Center map on actual browser location
+
+                map.panTo(coordinates);
+
+                if (accuracy <= 30) {
+                    map.setZoom(18);
+                } else if (accuracy <= 100) {
+                    map.setZoom(17);
+                } else if (accuracy <= 500) {
+                    map.setZoom(16);
+                } else {
+                    map.setZoom(14);
+                }
+
+                button.textContent = "My Location";
+
+                routeMessage.textContent =
+                    `Your location detected. Accuracy: approximately ${Math.round(accuracy)} meters.`;
+
+                console.log("Current Location:", {
+                    latitude: coordinates.lat,
+                    longitude: coordinates.lng,
+                    accuracy: accuracy
+                });
+
+            },
+
+            error => {
+
+                console.error("Geolocation Error:", error);
+
+                button.textContent = "My Location";
+
+                if (error.code === 1) {
+                    routeMessage.textContent =
+                        "Location permission denied. Allow location access in browser settings.";
+                } else if (error.code === 2) {
+                    routeMessage.textContent =
+                        "Current location is unavailable. Check your device location settings.";
+                } else if (error.code === 3) {
+                    routeMessage.textContent =
+                        "Location request timed out. Please try again.";
+                } else {
+                    routeMessage.textContent =
+                        "Unable to detect your current location.";
+                }
+
+            },
+
+            {
+                enableHighAccuracy: true,
+                timeout: 20000,
+                maximumAge: 0
+            }
+
+        );
+
+    });
+
+    map.controls[
+        google.maps.ControlPosition.TOP_RIGHT
+    ].push(button);
+
+    }
+
+
+    // ==========================================
+    // 11. PHOTON LOCATION SEARCH
+    // ==========================================
+
+    async function searchLocation(query, type) {
+
+        const searchId =
+            type === "start"
+                ? ++startSearchRequest
+                : ++destinationSearchRequest;
+
+        const datalist =
+            type === "start"
+                ? startSuggestions
+                : destinationSuggestions;
+
+        if (query.trim().length < 3) {
+
+            datalist.innerHTML = "";
+
+            if (type === "start") {
+
+                startResults = [];
+
+            } else {
+
+                destinationResults = [];
+
+            }
+
+            return;
+
+        }
+
+        try {
+
+            const url =
+                `https://photon.komoot.io/api/?q=${encodeURIComponent(query + ", Bangladesh")}&limit=5&lat=23.6850&lon=90.3563&lang=en`;
+
+            const response = await fetch(url);
+
+            if (!response.ok) {
+
+                throw new Error("Location search request failed.");
+
+            }
+
+            const data = await response.json();
+
+            if (
+                type === "start" &&
+                searchId !== startSearchRequest
+            ) {
+                return;
+            }
+
+            if (
+                type === "destination" &&
+                searchId !== destinationSearchRequest
+            ) {
+                return;
+            }
+
+            const results = data.features
+
+                .map(feature => {
+
+                    const p = feature.properties;
+
+                    const parts = [
+
+                        p.name,
+                        p.street,
+                        p.district,
+                        p.city,
+                        p.state,
+                        p.country
+
+                    ];
+
+                    const label = parts
+
+                        .filter(Boolean)
+
+                        .filter((value, index, array) =>
+                            array.indexOf(value) === index
+                        )
+
+                        .join(", ");
+
+                    return {
+
+                        label: label,
+
+                        coordinates: feature.geometry.coordinates
+
+                    };
+
+                })
+
+                .filter(result =>
+                    result.label &&
+                    result.coordinates
+                );
+
+
+            if (type === "start") {
+
+                startResults = results;
+
+            } else {
+
+                destinationResults = results;
+
+            }
+
+            datalist.innerHTML = "";
+
+            results.forEach(result => {
+
+                const option = document.createElement("option");
+
+                option.value = result.label;
+
+                datalist.appendChild(option);
+
+            });
+
+            if (results.length === 0) {
+
+                routeMessage.textContent =
+                    "No matching location found. Try another name.";
+
+            }
+
+        } catch (error) {
+
+            console.error("Location Search Error:", error);
+
+        }
+
+    }
+
+
+    // ==========================================
+    // 12. SEARCH WHILE TYPING
+    // ==========================================
+
+    startInput.addEventListener("input", () => {
+
+        const value = startInput.value.trim();
+
+        if (value !== startLabel) {
+
+            startPoint = null;
+
+            startLabel = "";
+
+            if (startMarker) {
+
+                startMarker.map = null;
+
+                startMarker = null;
+
+            }
+
+            clearRoute();
+
+            updateFindRouteButton();
+
+        }
+
+        searchLocation(value, "start");
+
+    });
+
+
+    destinationInput.addEventListener("input", () => {
+
+        const value = destinationInput.value.trim();
+
+        if (value !== destinationLabel) {
+
+            destinationPoint = null;
+
+            destinationLabel = "";
+
+            if (destinationMarker) {
+
+                destinationMarker.map = null;
+
+                destinationMarker = null;
+
+            }
+
+            clearRoute();
+
+            updateFindRouteButton();
+
+        }
+
+        searchLocation(value, "destination");
+
+    });
+
+
+    // ==========================================
+    // 13. SELECT SEARCHED LOCATION
+    // ==========================================
+
+    function selectSearchLocation(input, results, type) {
+
+        const selected = results.find(result =>
+            result.label === input.value.trim()
+        );
+
+        if (!selected) {
+
+            console.warn(
+                "Please select a location from the suggestions."
+            );
+
+            return false;
+
+        }
+
+        const coordinates = selected.coordinates;
+
+        if (
+            !Array.isArray(coordinates) ||
+            coordinates.length < 2
+        ) {
+
+            return false;
+
+        }
+
+
+        if (type === "start") {
+
+            startPoint = coordinates;
+
+            startLabel = selected.label;
+
+            updateStartMarker();
+
+        } else {
+
+            destinationPoint = coordinates;
+
+            destinationLabel = selected.label;
+
+            updateDestinationMarker();
+
+        }
+
+
+        map.panTo({
+
+            lat: coordinates[1],
+
+            lng: coordinates[0]
+
+        });
+
+        map.setZoom(13);
+
+        clearRoute();
+
+        updateFindRouteButton();
+
+        routeMessage.textContent =
+            `${selected.label} selected. Select the other location.`;
+
+        return true;
+
+    }
+
+
+    // ==========================================
+    // 14. HANDLE SEARCH SELECTION
+    // ==========================================
+
+    startInput.addEventListener("change", () => {
+
+        selectSearchLocation(
+
+            startInput,
+
+            startResults,
+
+            "start"
+
+        );
+
+    });
+
+
+    destinationInput.addEventListener("change", () => {
+
+        selectSearchLocation(
+
+            destinationInput,
+
+            destinationResults,
+
+            "destination"
+
+        );
+
+    });
+
+
+    // ==========================================
+    // 15. MAP CLICK: SELECT LOCATIONS
+    // ==========================================
+
+    
+async function handleMapClick(event) {
+
+    if (!event.latLng) return;
+
+    const coordinates = [
+        event.latLng.lng(),
+        event.latLng.lat()
+    ];
+
+    const requestId = ++mapSelectionRequest;
+
+    if (!startPoint || destinationPoint) {
+
+        // Select Starting Point
+
+        startPoint = coordinates;
+        destinationPoint = null;
+
+        startLabel = "Finding location...";
+        destinationLabel = "";
+
+        if (startMarker) startMarker.map = null;
+        if (destinationMarker) destinationMarker.map = null;
+
+        destinationMarker = null;
+        destinationInput.value = "";
+
+        startInput.value = "Finding location...";
+
+        startResults = [];
+        destinationResults = [];
+
+        startSuggestions.innerHTML = "";
+        destinationSuggestions.innerHTML = "";
+
+        updateStartMarker();
+        clearRoute();
+
+        routeMessage.textContent =
+            "Finding the starting location name...";
+
+        updateFindRouteButton();
+
+        const locationName =
+            await reverseGeocodeLocation(coordinates);
+
+        if (requestId !== mapSelectionRequest) return;
+
+        startLabel = locationName;
+        startInput.value = locationName;
+
+        updateStartMarker();
+
+        routeMessage.textContent =
+            `${locationName} selected. Now select your destination.`;
+
+    } else {
+
+        // Select Destination
+
+        destinationPoint = coordinates;
+        destinationLabel = "Finding location...";
+
+        destinationInput.value = "Finding location...";
+
+        updateDestinationMarker();
+        clearRoute();
+
+        routeMessage.textContent =
+            "Finding the destination name...";
+
+        updateFindRouteButton();
+
+        const locationName =
+            await reverseGeocodeLocation(coordinates);
+
+        if (requestId !== mapSelectionRequest) return;
+
+        destinationLabel = locationName;
+        destinationInput.value = locationName;
+
+        updateDestinationMarker();
+
+        routeMessage.textContent =
+            "Both locations selected. Click Find Route.";
+    }
+
+    updateFindRouteButton();
+    }
+
+    // ==========================================
+    // 16. SWAP LOCATIONS
+    // ==========================================
+
+    swapBtn.addEventListener("click", () => {
+
+        const tempPoint = startPoint;
+
+        startPoint = destinationPoint;
+
+        destinationPoint = tempPoint;
+
+
+        const tempLabel = startLabel;
+
+        startLabel = destinationLabel;
+
+        destinationLabel = tempLabel;
+
+
+        const tempText = startInput.value;
+
+        startInput.value = destinationInput.value;
+
+        destinationInput.value = tempText;
+
+
+        updateStartMarker();
+
+        updateDestinationMarker();
+
+        clearRoute();
+
+        updateFindRouteButton();
+
+        routeMessage.textContent =
+            "Locations swapped successfully.";
+
+    });
+
+
+    // ==========================================
+    // 17. FIND ROUTE USING DJANGO API
+    // ==========================================
+
+    findRouteBtn.addEventListener("click", async () => {
+
+        if (!startPoint || !destinationPoint) {
+
+            routeMessage.textContent =
+                "Please select both locations first.";
+
+            return;
+
+        }
+
+        isFindingRoute = true;
+
+        updateFindRouteButton();
+
+        findRouteBtn.textContent = "Finding Route...";
+
+        routeMessage.textContent =
+            "Calculating route using Bangladesh road graph...";
+
+        clearRoute();
+
+        try {
+
+            const params = new URLSearchParams({
+
+                start_lat: startPoint[1],
+
+                start_lon: startPoint[0],
+
+                goal_lat: destinationPoint[1],
+
+                goal_lon: destinationPoint[0],
+
+                algorithm: "astar"
+
+            });
+
+            const response = await fetch(
+                `/api/route/?${params.toString()}`
+            );
+
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+
+                throw new Error(
+                    result.message ||
+                    result.error ||
+                    "Route not found."
+                );
+
+            }
+
+            if (
+                !result.coordinates ||
+                result.coordinates.length < 2
+            ) {
+
+                throw new Error(
+                    "The routing engine returned an invalid route."
+                );
+
+            }
+
+
+            // Convert [longitude, latitude]
+            // into Google Maps LatLng objects
+
+            const routePath = result.coordinates.map(coordinate => ({
+
+                lat: coordinate[1],
+
+                lng: coordinate[0]
+
+            }));
+
+
+            // Draw route using Google Maps Polyline
+
+            routeLine = new Polyline({
+
+                path: routePath,
+
+                geodesic: false,
+
+                strokeColor: "#2563eb",
+
+                strokeOpacity: 0.9,
+
+                strokeWeight: 5,
+
+                map: map
+
+            });
+
+
+            // Zoom to complete route
+
+            const bounds = new LatLngBounds();
+
+            routePath.forEach(coordinate => {
+
+                bounds.extend(coordinate);
+
+            });
+
+            map.fitBounds(bounds, 70);
+
+
+            // Display route information
+
+            routeMessage.textContent =
+
+                `Algorithm: ${result.algorithm.toUpperCase()} | ` +
+
+                `Distance: ${result.distance_km} km | ` +
+
+                `Execution: ${result.execution_time_seconds} seconds`;
+
+
+            console.log("Routing Result:", result);
+
+        } catch (error) {
+
+            console.error("Routing Error:", error);
+
+            routeMessage.textContent =
+                `Routing Error: ${error.message}`;
+
+        } finally {
+
+            isFindingRoute = false;
+
+            findRouteBtn.textContent = "Find Route";
+
+            updateFindRouteButton();
+
+        }
+
+    });
+
+
+    // ==========================================
+    // 18. INITIALIZE APPLICATION
+    // ==========================================
+
+    initializeMap();
+
+</script>
 
 </body>
 </html>

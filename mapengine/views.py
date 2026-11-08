@@ -2,6 +2,7 @@
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_GET
+from django.conf import settings
 
 from .routing import route_between
 
@@ -41,9 +42,9 @@ def route_api(request):
             "success": False,
             "error": str(error)
         }, status=400)
-from django.shortcuts import render
 
 
 def map_page(request):
-    return render(request, "mapengine/index.html")
-
+    return render(request, "mapengine/index.html", {
+        "google_maps_api_key": settings.GOOGLE_MAPS_API_KEY
+    })
